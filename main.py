@@ -28,7 +28,7 @@ class CompanyAnalysis():
         return total_revenue
 
 
-msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='QV6GB9465BJSYTEE')
+msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='')
 print(msft_analysis.per_ratio_calculation())
 print(msft_analysis.income_statement_calculation())
 
