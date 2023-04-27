@@ -23,24 +23,24 @@ class CompanyAnalysis():
         income_statement_data = response.json()
         total_revenue = []
         for i in income_statement_data['annualReports']:
-            total_revenue.append((i['fiscalDateEnding'], i['totalRevenue']))
+            total_revenue.append(
+                (i['fiscalDateEnding'][:4], i['totalRevenue']))
 
-        return total_revenue
+        sales_growth_df = pd.DataFrame(total_revenue, columns=[
+                                       'YEAR', 'TOTAL_REVENUE'])
+
+        sales_growth_df['TOTAL_REVENUE'] = sales_growth_df.TOTAL_REVENUE.astype(
+            float)
+
+        sales_growth_df['SALES_GROWTH'] = sales_growth_df['TOTAL_REVENUE'].pct_change(
+            periods=-1) * 100
+
+        sales_growth_df['SALES_GROWTH'] = sales_growth_df['SALES_GROWTH'].apply(
+            lambda x: str(round(float(x), 2)) + '%')
+
+        return sales_growth_df
 
 
 msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='QV6GB9465BJSYTEE')
 print(msft_analysis.per_ratio_calculation())
 print(msft_analysis.income_statement_calculation())
-
-
-# income_statement_data = response.json()
-# df = pd.DataFrame(
-#    income_statement_data['annualReports'][0].keys(), columns=['KEY_NAMES'])
-# df.to_csv('Income_statement_keys.csv')
-
-# print(income_statement_data['Symbol'],  income_statement_data['PERatio'])
-
-# for i in income_statement_data['annualReports']:
-#    print(i)
-# else:
-#   print('Error fetching income statement data')
