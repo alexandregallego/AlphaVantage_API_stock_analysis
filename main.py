@@ -4,25 +4,25 @@ import pandas as pd
 
 class CompanyAnalysis():
     def __init__(self, symbol: str = None, access_key: str = None):
-        self.symbol = symbol
-        self.access_key = access_key
+        self.__symbol = symbol
+        self.__access_key = access_key
 
     def per_ratio_calculation(self):
         """Function to extract the PER ratio of whatever company symbol specified."""
 
-        url = f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={self.symbol}&apikey={self.access_key}'
+        url = f'https://www.alphavantage.co/query?function=OVERVIEW&symbol={self.__symbol}&apikey={self.__access_key}'
         response = requests.get(url)
-        self.per_ratio = response.json()['PERatio']
+        self.__per_ratio = response.json()['PERatio']
         dictionary_init = {'Company': [
-            self.symbol], 'PER ratio': [self.per_ratio]}
-        self.df = pd.DataFrame(dictionary_init)
+            self.__symbol], 'PER ratio': [self.__per_ratio]}
+        self.__df = pd.DataFrame(dictionary_init)
 
-        return self.df
+        return self.__df
 
     def income_statement_calculation(self):
         """Function to calculate relevant metrics from the income statement of whatever company symbol specified."""
 
-        url = f'https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={self.symbol}&apikey={self.access_key}'
+        url = f'https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={self.__symbol}&apikey={self.__access_key}'
         response = requests.get(url)
         income_statement_data = response.json()
         total_revenue = []
@@ -60,14 +60,14 @@ class CompanyAnalysis():
             income_statement_dict[f"NET_INCOME_GROWTH_{income_statement_df.YEAR.values.tolist()[i]}"] = [
                 income_statement_df.NET_INCOME_GROWTH.values.tolist()[i]]
 
-        self.income_statement_df_v2 = pd.DataFrame(income_statement_dict)
-        self.income_statement_df_v2['Company'] = self.symbol
+        self.__income_statement_df_v2 = pd.DataFrame(income_statement_dict)
+        self.__income_statement_df_v2['Company'] = self.__symbol
 
-        return self.income_statement_df_v2
+        return self.__income_statement_df_v2
 
     def final_df(self):
 
-        final_df = pd.merge(self.df, self.income_statement_df_v2,
+        final_df = pd.merge(self.__df, self.__income_statement_df_v2,
                             on='Company', how='left')
 
         return final_df
@@ -76,4 +76,5 @@ class CompanyAnalysis():
 msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='QV6GB9465BJSYTEE')
 msft_analysis.per_ratio_calculation()
 msft_analysis.income_statement_calculation()
-print(msft_analysis.final_df())
+# print(msft_analysis.final_df())
+print(msft_analysis.symbol)
