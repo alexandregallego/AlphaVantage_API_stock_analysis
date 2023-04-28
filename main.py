@@ -72,7 +72,24 @@ class CompanyAnalysis():
         response = requests.get(url)
         balance_sheet_data = response.json()
 
-        return balance_sheet_data
+        working_capital = []
+        for i in balance_sheet_data['annualReports']:
+            working_capital.append(
+                (i['fiscalDateEnding'][:4], i['totalCurrentAssets'], i['totalCurrentLiabilities']))
+
+        balance_sheet_df = pd.DataFrame(working_capital, columns=[
+            'YEAR', 'CURRENT_ASSETS', 'CURRENT_LIABILITIES'])
+
+        balance_sheet_df[['CURRENT_ASSETS', 'CURRENT_LIABILITIES']] = balance_sheet_df[['CURRENT_ASSETS', 'CURRENT_LIABILITIES']].astype(
+            float)
+
+        balance_sheet_df['WORKING_CAPITAL'] = balance_sheet_df['CURRENT_ASSETS'] / \
+            balance_sheet_df['CURRENT_LIABILITIES']
+
+        balance_sheet_df['WORKING_CAPITAL'] = balance_sheet_df['WORKING_CAPITAL'].apply(
+            '{:.2f}'.format)
+
+        return balance_sheet_df
 
     def final_df(self):
 
@@ -86,4 +103,4 @@ msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='QV6GB9465BJSYTEE')
 msft_analysis.per_ratio_calculation()
 msft_analysis.income_statement_calculation()
 # print(msft_analysis.final_df())
-print(msft_analysis.symbol)
+print(msft_analysis.balance_sheet_calculation())
