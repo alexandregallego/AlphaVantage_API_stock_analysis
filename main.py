@@ -28,42 +28,52 @@ class CompanyAnalysis():
         total_revenue = []
         for i in income_statement_data['annualReports']:
             total_revenue.append(
-                (i['fiscalDateEnding'][:4], i['totalRevenue']))
+                (i['fiscalDateEnding'][:4], i['totalRevenue'], i['netIncome']))
 
-        sales_growth_df = pd.DataFrame(total_revenue, columns=[
-                                       'YEAR', 'TOTAL_REVENUE'])
+        income_statement_df = pd.DataFrame(total_revenue, columns=[
+            'YEAR', 'TOTAL_REVENUE', 'NET_INCOME'])
 
-        sales_growth_df['TOTAL_REVENUE'] = sales_growth_df.TOTAL_REVENUE.astype(
+        income_statement_df['TOTAL_REVENUE'] = income_statement_df.TOTAL_REVENUE.astype(
             float)
 
-        sales_growth_df['SALES_GROWTH'] = sales_growth_df['TOTAL_REVENUE'].pct_change(
-            periods=-1) * 100
+        income_statement_df['SALES_GROWTH'] = income_statement_df['TOTAL_REVENUE'].pct_change(
+            periods=-1)
 
-        sales_growth_df = sales_growth_df.dropna()
+        income_statement_df['NET_INCOME'] = income_statement_df.NET_INCOME.astype(
+            float)
 
-        sales_growth_df['SALES_GROWTH'] = sales_growth_df['SALES_GROWTH'].apply(
-            lambda x: str(round(float(x), 2)) + '%')
+        income_statement_df['NET_INCOME_GROWTH'] = income_statement_df['NET_INCOME'].pct_change(
+            periods=-1)
 
-        sales_growth_dict = {}
+        income_statement_df = income_statement_df.dropna()
 
-        for i in range(0, len(sales_growth_df.SALES_GROWTH.values.tolist())):
-            sales_growth_dict[f"SALES_GROWTH_{sales_growth_df.YEAR.values.tolist()[i]}"] = [
-                sales_growth_df.SALES_GROWTH.values.tolist()[i]]
+        income_statement_df[['SALES_GROWTH', 'NET_INCOME_GROWTH']] = income_statement_df[[
+            'SALES_GROWTH', 'NET_INCOME_GROWTH']].applymap('{:.2%}'.format)
 
-        self.sales_growth_df_v2 = pd.DataFrame(sales_growth_dict)
-        self.sales_growth_df_v2['Company'] = self.symbol
+        income_statement_dict = {}
 
-        return self.sales_growth_df_v2
+        for i in range(0, len(income_statement_df.SALES_GROWTH.values.tolist())):
+            income_statement_dict[f"SALES_GROWTH_{income_statement_df.YEAR.values.tolist()[i]}"] = [
+                income_statement_df.SALES_GROWTH.values.tolist()[i]]
+
+        for i in range(0, len(income_statement_df.NET_INCOME_GROWTH.values.tolist())):
+            income_statement_dict[f"NET_INCOME_GROWTH_{income_statement_df.YEAR.values.tolist()[i]}"] = [
+                income_statement_df.NET_INCOME_GROWTH.values.tolist()[i]]
+
+        self.income_statement_df_v2 = pd.DataFrame(income_statement_dict)
+        self.income_statement_df_v2['Company'] = self.symbol
+
+        return self.income_statement_df_v2
 
     def final_df(self):
 
-        final_df = pd.merge(self.df, self.sales_growth_df_v2,
+        final_df = pd.merge(self.df, self.income_statement_df_v2,
                             on='Company', how='left')
 
         return final_df
 
 
-msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='')
+msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='QV6GB9465BJSYTEE')
 msft_analysis.per_ratio_calculation()
 msft_analysis.income_statement_calculation()
 print(msft_analysis.final_df())
