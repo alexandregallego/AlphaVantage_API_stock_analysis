@@ -63,7 +63,7 @@ class CompanyAnalysis():
         return final_df
 
 
-msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='QV6GB9465BJSYTEE')
+msft_analysis = CompanyAnalysis(symbol='MSFT', access_key='')
 msft_analysis.per_ratio_calculation()
 msft_analysis.income_statement_calculation()
 print(msft_analysis.final_df())
