@@ -65,6 +65,15 @@ class CompanyAnalysis():
 
         return self.__income_statement_df_v2
 
+    def balance_sheet_calculation(self):
+        """Function to calculate relevant metrics from the income statement of whatever company symbol specified."""
+
+        url = f'https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol={self.__symbol}&apikey={self.__access_key}'
+        response = requests.get(url)
+        balance_sheet_data = response.json()
+
+        return balance_sheet_data
+
     def final_df(self):
 
         final_df = pd.merge(self.__df, self.__income_statement_df_v2,
