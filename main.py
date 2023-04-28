@@ -89,7 +89,16 @@ class CompanyAnalysis():
         balance_sheet_df['WORKING_CAPITAL'] = balance_sheet_df['WORKING_CAPITAL'].apply(
             '{:.2f}'.format)
 
-        return balance_sheet_df
+        balance_sheet_dict = {}
+
+        for i in range(0, len(balance_sheet_df.WORKING_CAPITAL.values.tolist())):
+            balance_sheet_dict[f"WORKING_CAPITAL_{balance_sheet_df.YEAR.values.tolist()[i]}"] = [
+                balance_sheet_df.WORKING_CAPITAL.values.tolist()[i]]
+
+        self.__balance_sheet_df_v2 = pd.DataFrame(balance_sheet_dict)
+        self.__balance_sheet_df_v2['Company'] = self.__symbol
+
+        return self.__balance_sheet_df_v2
 
     def final_df(self):
 
