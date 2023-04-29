@@ -9,6 +9,7 @@ class CompanyAnalysis():
         self.__access_key = access_key
 
     def trading_stocks_list(self):
+        "Function to return active stocks in the last day."
         url = f"https://www.alphavantage.co/query?function=LISTING_STATUS&apikey={self.__access_key}"
         with requests.Session() as s:
             download = s.get(url)
@@ -17,7 +18,8 @@ class CompanyAnalysis():
             my_list = list(cr)
             df = pd.DataFrame(my_list, columns=[
                               'TICKER', 'NAME', 'INDEX', 'TYPE_OF_ASSET', 'DATE', 'UNDEFINED', 'STATUS'])
-            df.to_csv('STOCKS.csv')
+            file_path = 'STOCKS_LIST/'
+            df.to_csv(file_path + 'STOCKS.csv', index=False)
 
     def per_ratio_calculation(self):
         """Function to extract the PER ratio of whatever company symbol specified."""
@@ -31,8 +33,8 @@ class CompanyAnalysis():
 
         return self.__df
 
-    def income_statement_growth_calculation(self):
-        """Function to calculate relevant growth metrics from the income statement of whatever company symbol specified."""
+    def income_statement_load(self):
+        """Function to load income statement data"""
 
         url = f'https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={self.__symbol}&apikey={self.__access_key}'
         response = requests.get(url)
@@ -42,120 +44,71 @@ class CompanyAnalysis():
             total_revenue.append(
                 (i['fiscalDateEnding'][:4], i['totalRevenue'], i['netIncome']))
 
-        income_statement_growth_df = pd.DataFrame(total_revenue, columns=[
+        self.__income_statement_df = pd.DataFrame(total_revenue, columns=[
             'YEAR', 'TOTAL_REVENUE', 'NET_INCOME'])
 
-        income_statement_growth_df['TOTAL_REVENUE'] = income_statement_growth_df.TOTAL_REVENUE.astype(
-            float)
+        return self.__income_statement_df
 
-        income_statement_growth_df['SALES_GROWTH'] = income_statement_growth_df['TOTAL_REVENUE'].pct_change(
-            periods=-1)
+    def format_floats(column1, column2):
+        def decorator(func):
+            def wrapper(self, *args, **kwargs):
+                df = func(self, *args, **kwargs)
+                df[column1] = df[column1].astype(float)
+                df[column2] = df[column1].pct_change(
+                    periods=-1)
+                df = df.dropna()
+                df[column2] = df[column2].apply('{:.2%}'.format)
+                dict = {}
+                for i in range(0, len(df[column2].values.tolist())):
+                    dict[f"{column2}_{df.YEAR.values.tolist()[i]}"] = [
+                        df[column2].values.tolist()[i]]
+                df_v2 = pd.DataFrame(dict)
+                df_v2['Company'] = self.__symbol
+                return df_v2
+            return wrapper
+        return decorator
 
-        income_statement_growth_df['NET_INCOME'] = income_statement_growth_df.NET_INCOME.astype(
-            float)
+    def percentage_calc_fmt(column1, column2, column3):
+        def percentage_decorator(func):
+            def wrapper(self, *args, **kwargs):
+                df = func(self, *args, **kwargs)
+                df[[column1, column2]] = df[[column1, column2]].astype(float)
+                df[column3] = df[column1]/df[column2]
+                df[column3] = df[column3].apply('{:.2%}'.format)
+                percentage_dict = {}
+                for i in range(0, len(df[column3].values.tolist())):
+                    percentage_dict[f"{column3}_{df.YEAR.values.tolist()[i]}"] = [
+                        df[column3].values.tolist()[i]]
+                df_v2 = pd.DataFrame(percentage_dict)
+                df_v2['Company'] = self.__symbol
+                return df_v2
+            return wrapper
+        return percentage_decorator
 
-        income_statement_growth_df['NET_INCOME_GROWTH'] = income_statement_growth_df['NET_INCOME'].pct_change(
-            periods=-1)
+    @format_floats('NET_INCOME', 'NET_INCOME_GROWTH')
+    def net_income_growth(self):
+        """Function that will return net income growth for whatever company specified over the period from which
+        data is available.
+        """
+        self.__net_income_df = self.income_statement_load()
 
-        income_statement_growth_df = income_statement_growth_df.dropna()
+        return self.__net_income_df
 
-        income_statement_growth_df[['SALES_GROWTH', 'NET_INCOME_GROWTH']] = income_statement_growth_df[[
-            'SALES_GROWTH', 'NET_INCOME_GROWTH']].applymap('{:.2%}'.format)
+    @format_floats('TOTAL_REVENUE', 'SALES_GROWTH')
+    def sales_growth(self):
+        """Function that will return sales growth for whatever company specified over the period from which
+        data is available.
+        """
 
-        income_statement_growth_dict = {}
+        self.__sales_df = self.income_statement_load()
+        return self.__sales_df
 
-        for i in range(0, len(income_statement_growth_df.SALES_GROWTH.values.tolist())):
-            income_statement_growth_dict[f"SALES_GROWTH_{income_statement_growth_df.YEAR.values.tolist()[i]}"] = [
-                income_statement_growth_df.SALES_GROWTH.values.tolist()[i]]
+    @percentage_calc_fmt('NET_INCOME', 'TOTAL_REVENUE', 'MARGIN')
+    def margin_calculation(self):
+        """
+        Function that will return the margin for whatever company specified over the period from which
+        data is available
+        """
 
-        for i in range(0, len(income_statement_growth_df.NET_INCOME_GROWTH.values.tolist())):
-            income_statement_growth_dict[f"NET_INCOME_GROWTH_{income_statement_growth_df.YEAR.values.tolist()[i]}"] = [
-                income_statement_growth_df.NET_INCOME_GROWTH.values.tolist()[i]]
-
-        self.__income_statement_growth_df_v2 = pd.DataFrame(
-            income_statement_growth_dict)
-        self.__income_statement_growth_df_v2['Company'] = self.__symbol
-
-        return self.__income_statement_growth_df_v2
-
-    def income_statement_calculation(self):
-        """Function to calculate relevant metrics from the income statement of whatever company symbol specified."""
-
-        url = f'https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={self.__symbol}&apikey={self.__access_key}'
-        response = requests.get(url)
-        income_statement_data = response.json()
-        total_revenue = []
-        for i in income_statement_data['annualReports']:
-            total_revenue.append(
-                (i['fiscalDateEnding'][:4], i['totalRevenue'], i['netIncome']))
-
-        income_statement_df = pd.DataFrame(total_revenue, columns=[
-            'YEAR', 'TOTAL_REVENUE', 'NET_INCOME'])
-
-        income_statement_df[['TOTAL_REVENUE', 'NET_INCOME']] = income_statement_df[['TOTAL_REVENUE', 'NET_INCOME']].astype(
-            float)
-
-        income_statement_df['MARGIN'] = income_statement_df['NET_INCOME'] / \
-            income_statement_df['TOTAL_REVENUE']
-
-        income_statement_df['MARGIN'] = income_statement_df['MARGIN'].apply(
-            '{:.2%}'.format)
-
-        income_statement_dict = {}
-
-        for i in range(0, len(income_statement_df.MARGIN.values.tolist())):
-            income_statement_dict[f"MARGIN_{income_statement_df.YEAR.values.tolist()[i]}"] = [
-                income_statement_df.MARGIN.values.tolist()[i]]
-
-        self.__income_statement_df_v2 = pd.DataFrame(income_statement_dict)
-        self.__income_statement_df_v2['Company'] = self.__symbol
-
-        return self.__income_statement_df_v2
-
-    def balance_sheet_calculation(self):
-        """Function to calculate relevant metrics from the income statement of whatever company symbol specified."""
-
-        url = f'https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol={self.__symbol}&apikey={self.__access_key}'
-        response = requests.get(url)
-        balance_sheet_data = response.json()
-
-        working_capital = []
-        for i in balance_sheet_data['annualReports']:
-            working_capital.append(
-                (i['fiscalDateEnding'][:4], i['totalCurrentAssets'], i['totalCurrentLiabilities']))
-
-        balance_sheet_df = pd.DataFrame(working_capital, columns=[
-            'YEAR', 'CURRENT_ASSETS', 'CURRENT_LIABILITIES'])
-
-        balance_sheet_df[['CURRENT_ASSETS', 'CURRENT_LIABILITIES']] = balance_sheet_df[['CURRENT_ASSETS', 'CURRENT_LIABILITIES']].astype(
-            float)
-
-        balance_sheet_df['WORKING_CAPITAL'] = balance_sheet_df['CURRENT_ASSETS'] / \
-            balance_sheet_df['CURRENT_LIABILITIES']
-
-        balance_sheet_df['WORKING_CAPITAL'] = balance_sheet_df['WORKING_CAPITAL'].apply(
-            '{:.2f}'.format)
-
-        balance_sheet_dict = {}
-
-        for i in range(0, len(balance_sheet_df.WORKING_CAPITAL.values.tolist())):
-            balance_sheet_dict[f"WORKING_CAPITAL_{balance_sheet_df.YEAR.values.tolist()[i]}"] = [
-                balance_sheet_df.WORKING_CAPITAL.values.tolist()[i]]
-
-        self.__balance_sheet_df_v2 = pd.DataFrame(balance_sheet_dict)
-        self.__balance_sheet_df_v2['Company'] = self.__symbol
-
-        return self.__balance_sheet_df_v2
-
-    def final_df(self):
-
-        self.final_df = pd.merge(self.__df, self.__balance_sheet_df_v2,
-                                 on='Company', how='left')
-
-        self.final_df = pd.merge(
-            self.final_df, self.__income_statement_growth_df_v2, on='Company', how='left')
-
-        self.final_df = pd.merge(
-            self.final_df, self.__income_statement_df_v2, on='Company', how='left')
-
-        return self.final_df
+        self.__margin_df = self.income_statement_load()
+        return self.__margin_df
