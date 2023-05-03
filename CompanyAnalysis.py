@@ -34,7 +34,7 @@ class CompanyAnalysis():
         return self.__df
 
     def income_statement_load(self):
-        """Function to load income statement data"""
+        """Function to load income statement data."""
 
         url = f'https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={self.__symbol}&apikey={self.__access_key}'
         response = requests.get(url)
@@ -48,6 +48,23 @@ class CompanyAnalysis():
             'YEAR', 'TOTAL_REVENUE', 'NET_INCOME'])
 
         return self.__income_statement_df
+
+    def balance_sheet_load(self):
+        """Function to load balance sheet data."""
+
+        url = f'https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol={self.__symbol}&apikey={self.__access_key}'
+        response = requests.get(url)
+        balance_sheet_data = response.json()
+
+        balance_sheet = []
+        for i in balance_sheet_data['annualReports']:
+            balance_sheet.append((i['fiscalDateEnding'][:4], i['totalCurrentAssets'],
+                                 i['totalCurrentLiabilities'], i['totalShareholderEquity']))
+
+        self.__balance_sheet_df = pd.DataFrame(balance_sheet, columns=[
+                                               'YEAR', 'CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'SHAREHOLDER_EQUITY'])
+
+        return self.__balance_sheet_df
 
     def format_floats(column1, column2):
         def decorator(func):
@@ -74,7 +91,10 @@ class CompanyAnalysis():
                 df = func(self, *args, **kwargs)
                 df[[column1, column2]] = df[[column1, column2]].astype(float)
                 df[column3] = df[column1]/df[column2]
-                df[column3] = df[column3].apply('{:.2%}'.format)
+                if column3 != 'WORKING_CAPITAL':
+                    df[column3] = df[column3].apply('{:.2%}'.format)
+                else:
+                    df[column3] = df[column3].apply('{:.2f}'.format)
                 percentage_dict = {}
                 for i in range(0, len(df[column3].values.tolist())):
                     percentage_dict[f"{column3}_{df.YEAR.values.tolist()[i]}"] = [
@@ -112,3 +132,27 @@ class CompanyAnalysis():
 
         self.__margin_df = self.income_statement_load()
         return self.__margin_df
+
+    @percentage_calc_fmt('CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'WORKING_CAPITAL')
+    def working_capital_calculation(self):
+        """
+        Function that will return the margin for whatever company specified over the period from which
+        data is available
+        """
+
+        self.__working_capital_df = self.balance_sheet_load()
+        return self.__working_capital_df
+
+    @percentage_calc_fmt('NET_INCOME', 'SHAREHOLDER_EQUITY', 'ROE')
+    def return_on_equity_calculation(self):
+        """
+        Function that will return the return on equity for whatever company specified over the period from which
+        data is available
+        """
+
+        df_income_statement = self.income_statement_load()
+        df_balance_sheet = self.balance_sheet_load()
+        self.__return_on_equity_df = pd.merge(
+            df_balance_sheet, df_income_statement, on='YEAR', how='inner')
+
+        return self.__return_on_equity_df

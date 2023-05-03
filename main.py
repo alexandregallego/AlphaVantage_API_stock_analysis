@@ -6,12 +6,15 @@ list_of_companies = ['MSFT']
 
 company_analysis_df = pd.DataFrame()
 for i in list_of_companies:
-    company_analysis = CompanyAnalysis(symbol=i, access_key='')
-    company_analysis.per_ratio_calculation()
-    print(company_analysis.net_income_growth())
-    print(company_analysis.sales_growth())
-    print(company_analysis.margin_calculation())
-    company_analysis.trading_stocks_list()
+    company_analysis = CompanyAnalysis(symbol=i, access_key='QV6GB9465BJSYTEE')
+    # print(company_analysis.return_on_equity_calculation())
+    print(company_analysis.working_capital_calculation())
+
+    # company_analysis.per_ratio_calculation()
+    # print(company_analysis.net_income_growth())
+    # print(company_analysis.sales_growth())
+    # print(company_analysis.margin_calculation())
+    # company_analysis.trading_stocks_list()
     # company_analysis.balance_sheet_calculation()
     # company_analysis.final_df()
     # if company_analysis_df.shape[0] < 1:
