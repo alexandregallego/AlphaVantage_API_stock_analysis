@@ -59,10 +59,10 @@ class CompanyAnalysis():
         balance_sheet = []
         for i in balance_sheet_data['annualReports']:
             balance_sheet.append((i['fiscalDateEnding'][:4], i['totalCurrentAssets'],
-                                 i['totalCurrentLiabilities'], i['totalShareholderEquity']))
+                                 i['totalCurrentLiabilities'], i['totalShareholderEquity'], i['totalAssets']))
 
         self.__balance_sheet_df = pd.DataFrame(balance_sheet, columns=[
-                                               'YEAR', 'CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'SHAREHOLDER_EQUITY'])
+                                               'YEAR', 'CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'SHAREHOLDER_EQUITY', 'TOTAL_ASSETS'])
 
         return self.__balance_sheet_df
 
@@ -156,3 +156,17 @@ class CompanyAnalysis():
             df_balance_sheet, df_income_statement, on='YEAR', how='inner')
 
         return self.__return_on_equity_df
+
+    @percentage_calc_fmt('NET_INCOME', 'TOTAL_ASSETS', 'ROA')
+    def return_on_assets_calculation(self):
+        """
+        Function that will return the return on equity for whatever company specified over the period from which
+        data is available
+        """
+
+        df_income_statement = self.income_statement_load()
+        df_balance_sheet = self.balance_sheet_load()
+        self.__return_on_assets_df = pd.merge(
+            df_balance_sheet, df_income_statement, on='YEAR', how='inner')
+
+        return self.__return_on_assets_df
