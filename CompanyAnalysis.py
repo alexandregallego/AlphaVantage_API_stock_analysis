@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 import csv
+import matplotlib.pyplot as plt
 
 
 class CompanyAnalysis():
@@ -168,3 +169,11 @@ class CompanyAnalysis():
             df_balance_sheet, df_income_statement, on='YEAR', how='inner')
 
         return self.__return_on_assets_df
+
+    def sales_growth_graph(self):
+        plt.bar(list(reversed(self.__income_statement_df['YEAR'].tolist())),
+                list(reversed(self.__income_statement_df['TOTAL_REVENUE'].tolist())))
+        plt.xlabel('YEAR')
+        plt.ylabel('SALES')
+        plt.title(self.__symbol + ' sales growth')
+        plt.savefig(self.__symbol + '_sales_growth.png')
