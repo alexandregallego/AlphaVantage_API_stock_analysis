@@ -85,6 +85,19 @@ class CompanyAnalysis():
             return wrapper
         return decorator
 
+    def bar_graph(column1, column2):
+        def bar_graph_decorator(func):
+            def wrapper(self, *args, **kwargs):
+                df = func(self, *args, **kwargs)
+                plt.bar(list(reversed(df[column1].tolist())),
+                        list(reversed(df[column2].tolist())))
+                plt.xlabel(column1)
+                plt.ylabel(column2)
+                plt.title(self.__symbol + '' + column2)
+                plt.savefig(self.__symbol + f'{column2}.png')
+            return wrapper
+        return bar_graph_decorator
+
     def percentage_calc_fmt(column1, column2, column3):
         def percentage_decorator(func):
             def wrapper(self, *args, **kwargs):
@@ -170,10 +183,6 @@ class CompanyAnalysis():
 
         return self.__return_on_assets_df
 
+    @bar_graph('YEAR', 'TOTAL_REVENUE')
     def sales_growth_graph(self):
-        plt.bar(list(reversed(self.__income_statement_df['YEAR'].tolist())),
-                list(reversed(self.__income_statement_df['TOTAL_REVENUE'].tolist())))
-        plt.xlabel('YEAR')
-        plt.ylabel('SALES')
-        plt.title(self.__symbol + ' sales growth')
-        plt.savefig(self.__symbol + '_sales_growth.png')
+        return self.__income_statement_df

@@ -6,7 +6,7 @@ list_of_companies = ['MSFT']
 
 company_analysis_df = pd.DataFrame()
 for i in list_of_companies:
-    company_analysis = CompanyAnalysis(symbol=i, access_key='QV6GB9465BJSYTEE')
+    company_analysis = CompanyAnalysis(symbol=i, access_key='')
     company_analysis.income_statement_load()
     company_analysis.balance_sheet_load()
     roe_df = company_analysis.return_on_equity_calculation()
