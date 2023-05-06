@@ -80,7 +80,6 @@ class CompanyAnalysis():
                     dict[f"{column2}_{df.YEAR.values.tolist()[i]}"] = [
                         df[column2].values.tolist()[i]]
                 df_v2 = pd.DataFrame(dict)
-                df_v2['Company'] = self.__symbol
                 return df_v2
             return wrapper
         return decorator
@@ -100,7 +99,6 @@ class CompanyAnalysis():
                     percentage_dict[f"{column3}_{df.YEAR.values.tolist()[i]}"] = [
                         df[column3].values.tolist()[i]]
                 df_v2 = pd.DataFrame(percentage_dict)
-                df_v2['Company'] = self.__symbol
                 return df_v2
             return wrapper
         return percentage_decorator
@@ -110,7 +108,7 @@ class CompanyAnalysis():
         """Function that will return net income growth for whatever company specified over the period from which
         data is available.
         """
-        self.__net_income_df = self.income_statement_load()
+        self.__net_income_df = self.__income_statement_df
 
         return self.__net_income_df
 
@@ -120,7 +118,7 @@ class CompanyAnalysis():
         data is available.
         """
 
-        self.__sales_df = self.income_statement_load()
+        self.__sales_df = self.__income_statement_df
         return self.__sales_df
 
     @percentage_calc_fmt('NET_INCOME', 'TOTAL_REVENUE', 'MARGIN')
@@ -130,7 +128,7 @@ class CompanyAnalysis():
         data is available
         """
 
-        self.__margin_df = self.income_statement_load()
+        self.__margin_df = self.__income_statement_df
         return self.__margin_df
 
     @percentage_calc_fmt('CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'WORKING_CAPITAL')
@@ -140,7 +138,7 @@ class CompanyAnalysis():
         data is available
         """
 
-        self.__working_capital_df = self.balance_sheet_load()
+        self.__working_capital_df = self.__balance_sheet_df
         return self.__working_capital_df
 
     @percentage_calc_fmt('NET_INCOME', 'SHAREHOLDER_EQUITY', 'ROE')
@@ -150,8 +148,8 @@ class CompanyAnalysis():
         data is available
         """
 
-        df_income_statement = self.income_statement_load()
-        df_balance_sheet = self.balance_sheet_load()
+        df_income_statement = self.__income_statement_df
+        df_balance_sheet = self.__balance_sheet_df
         self.__return_on_equity_df = pd.merge(
             df_balance_sheet, df_income_statement, on='YEAR', how='inner')
 
@@ -164,8 +162,8 @@ class CompanyAnalysis():
         data is available
         """
 
-        df_income_statement = self.income_statement_load()
-        df_balance_sheet = self.balance_sheet_load()
+        df_income_statement = self.__income_statement_df
+        df_balance_sheet = self.__balance_sheet_df
         self.__return_on_assets_df = pd.merge(
             df_balance_sheet, df_income_statement, on='YEAR', how='inner')
 
