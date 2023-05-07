@@ -1,12 +1,14 @@
 from CompanyAnalysis import CompanyAnalysis
 import pandas as pd
 import time
+import os
 
+new_folder_path_2 = 'ANALYSIS_RESULTS/'
 list_of_companies = ['MSFT']
 
 company_analysis_df = pd.DataFrame()
 for i in list_of_companies:
-    company_analysis = CompanyAnalysis(symbol=i, access_key='')
+    company_analysis = CompanyAnalysis(symbol=i, access_key='QV6GB9465BJSYTEE')
     company_analysis.income_statement_load()
     company_analysis.balance_sheet_load()
     roe_df = company_analysis.return_on_equity_calculation()
@@ -29,4 +31,9 @@ for i in list_of_companies:
     company_analysis.working_capital_graph()
     time.sleep(65)
 
-company_analysis_df.to_csv('Company_analysis.csv')
+if not os.path.exists(new_folder_path_2):
+    os.makedirs(new_folder_path_2)
+    company_analysis_df.to_csv(f'{new_folder_path_2}COMPANY_ANALYSIS.csv')
+    print(f'Created new folder: {new_folder_path_2}')
+else:
+    print(f'Folder {new_folder_path_2} already exists')

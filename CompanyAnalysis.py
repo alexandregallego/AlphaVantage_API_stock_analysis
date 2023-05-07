@@ -3,6 +3,7 @@ import pandas as pd
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 
 class CompanyAnalysis():
@@ -101,7 +102,14 @@ class CompanyAnalysis():
                 plt.xlabel(column1)
                 plt.ylabel(column2)
                 plt.title(self.__symbol + '' + column2)
-                plt.savefig(self.__symbol + f'{column2}.png')
+                new_folder_path = f'GRAPHS/{self.__symbol}'
+                if not os.path.exists(new_folder_path):
+                    os.makedirs(new_folder_path)
+                    print(f'Created new folder: {new_folder_path}')
+                else:
+                    print(f'Folder {new_folder_path} already exists')
+                plt.savefig(
+                    f'GRAPHS/{self.__symbol}/{self.__symbol}_{column2}.png')
                 plt.close()
             return wrapper
         return bar_graph_decorator
