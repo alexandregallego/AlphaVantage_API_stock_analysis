@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import csv
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class CompanyAnalysis():
@@ -89,12 +90,19 @@ class CompanyAnalysis():
         def bar_graph_decorator(func):
             def wrapper(self, *args, **kwargs):
                 df = func(self, *args, **kwargs)
-                plt.bar(list(reversed(df[column1].tolist())),
-                        list(reversed(df[column2].tolist())))
+                x = np.array(list(reversed(df[column1].tolist())))
+                y = np.array(
+                    list(reversed(df[column2].tolist()))).astype(float)
+                idx = np.argsort(x)
+                x_sorted = x[idx]
+                y_sorted = y[idx]
+                plt.bar(x_sorted, y_sorted)
+                plt.ylim(ymin=0)
                 plt.xlabel(column1)
                 plt.ylabel(column2)
                 plt.title(self.__symbol + '' + column2)
                 plt.savefig(self.__symbol + f'{column2}.png')
+                plt.close()
             return wrapper
         return bar_graph_decorator
 
@@ -122,7 +130,7 @@ class CompanyAnalysis():
         """Function that will return net income growth for whatever company specified over the period from which
         data is available.
         """
-        self.__net_income_df = self.__income_statement_df
+        self.__net_income_df = self.__income_statement_df.copy()
 
         return self.__net_income_df
 
@@ -132,7 +140,7 @@ class CompanyAnalysis():
         data is available.
         """
 
-        self.__sales_df = self.__income_statement_df
+        self.__sales_df = self.__income_statement_df.copy()
         return self.__sales_df
 
     @percentage_calc_fmt('NET_INCOME', 'TOTAL_REVENUE', 'MARGIN')
@@ -142,7 +150,7 @@ class CompanyAnalysis():
         data is available
         """
 
-        self.__margin_df = self.__income_statement_df
+        self.__margin_df = self.__income_statement_df.copy()
         return self.__margin_df
 
     @percentage_calc_fmt('CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'WORKING_CAPITAL')
@@ -152,7 +160,7 @@ class CompanyAnalysis():
         data is available
         """
 
-        self.__working_capital_df = self.__balance_sheet_df
+        self.__working_capital_df = self.__balance_sheet_df.copy()
         return self.__working_capital_df
 
     @percentage_calc_fmt('NET_INCOME', 'SHAREHOLDER_EQUITY', 'ROE')
@@ -162,8 +170,8 @@ class CompanyAnalysis():
         data is available
         """
 
-        df_income_statement = self.__income_statement_df
-        df_balance_sheet = self.__balance_sheet_df
+        df_income_statement = self.__income_statement_df.copy()
+        df_balance_sheet = self.__balance_sheet_df.copy()
         self.__return_on_equity_df = pd.merge(
             df_balance_sheet, df_income_statement, on='YEAR', how='inner')
 
@@ -176,8 +184,8 @@ class CompanyAnalysis():
         data is available
         """
 
-        df_income_statement = self.__income_statement_df
-        df_balance_sheet = self.__balance_sheet_df
+        df_income_statement = self.__income_statement_df.copy()
+        df_balance_sheet = self.__balance_sheet_df.copy()
         self.__return_on_assets_df = pd.merge(
             df_balance_sheet, df_income_statement, on='YEAR', how='inner')
 
@@ -185,4 +193,14 @@ class CompanyAnalysis():
 
     @bar_graph('YEAR', 'TOTAL_REVENUE')
     def sales_growth_graph(self):
-        return self.__income_statement_df
+        sales_growth_graph_df = self.__income_statement_df.copy()
+        return sales_growth_graph_df
+
+    @bar_graph('YEAR', 'NET_INCOME')
+    def net_income_graph(self):
+        net_income_growth_graph = self.__income_statement_df.copy()
+        return net_income_growth_graph
+
+    @bar_graph('YEAR', 'WORKING_CAPITAL')
+    def working_capital_graph(self):
+        return self.__working_capital_df

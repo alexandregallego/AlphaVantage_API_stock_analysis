@@ -25,6 +25,8 @@ for i in list_of_companies:
     #    company_analysis_df = pd.concat(
     #        [company_analysis_df, final_df])
     company_analysis.sales_growth_graph()
+    company_analysis.net_income_graph()
+    company_analysis.working_capital_graph()
     time.sleep(65)
 
 company_analysis_df.to_csv('Company_analysis.csv')
