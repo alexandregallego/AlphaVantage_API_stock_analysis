@@ -92,8 +92,13 @@ class CompanyAnalysis():
             def wrapper(self, *args, **kwargs):
                 df = func(self, *args, **kwargs)
                 x = np.array(list(reversed(df[column1].tolist())))
-                y = np.array(
-                    list(reversed(df[column2].tolist()))).astype(float)
+                if column2 not in ['ROE', 'ROA', 'MARGIN']:
+                    y = np.array(
+                        list(reversed(df[column2].tolist()))).astype(float)
+                else:
+                    y = np.array([i.split('%')[0]
+                                 for i in list(reversed(df[column2].tolist()))]).astype(float)
+                    print(y)
                 idx = np.argsort(x)
                 x_sorted = x[idx]
                 y_sorted = y[idx]
@@ -212,3 +217,15 @@ class CompanyAnalysis():
     @bar_graph('YEAR', 'WORKING_CAPITAL')
     def working_capital_graph(self):
         return self.__working_capital_df
+
+    @bar_graph('YEAR', 'ROE')
+    def return_on_equity_graph(self):
+        return self.__return_on_equity_df
+
+    @bar_graph('YEAR', 'ROA')
+    def return_on_assets_graph(self):
+        return self.__return_on_assets_df
+
+    @bar_graph('YEAR', 'MARGIN')
+    def margin_graph(self):
+        return self.__margin_df

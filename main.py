@@ -4,7 +4,7 @@ import time
 import os
 
 new_folder_path_2 = 'ANALYSIS_RESULTS/'
-list_of_companies = ['MSFT']
+list_of_companies = ['MSFT', 'AAPL']
 
 company_analysis_df = pd.DataFrame()
 for i in list_of_companies:
@@ -29,6 +29,9 @@ for i in list_of_companies:
     company_analysis.sales_growth_graph()
     company_analysis.net_income_graph()
     company_analysis.working_capital_graph()
+    company_analysis.return_on_equity_graph()
+    company_analysis.return_on_assets_graph()
+    company_analysis.margin_graph()
     time.sleep(65)
 
 if not os.path.exists(new_folder_path_2):
