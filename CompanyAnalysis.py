@@ -62,10 +62,10 @@ class CompanyAnalysis():
         balance_sheet = []
         for i in balance_sheet_data['annualReports']:
             balance_sheet.append((i['fiscalDateEnding'][:4], i['totalCurrentAssets'],
-                                 i['totalCurrentLiabilities'], i['totalShareholderEquity'], i['totalAssets']))
+                                 i['totalCurrentLiabilities'], i['totalShareholderEquity'], i['totalAssets'], i['cashAndShortTermInvestments']))
 
         self.__balance_sheet_df = pd.DataFrame(balance_sheet, columns=[
-                                               'YEAR', 'CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'SHAREHOLDER_EQUITY', 'TOTAL_ASSETS'])
+                                               'YEAR', 'CURRENT_ASSETS', 'CURRENT_LIABILITIES', 'SHAREHOLDER_EQUITY', 'TOTAL_ASSETS', 'CASH'])
 
         return self.__balance_sheet_df
 
@@ -156,6 +156,15 @@ class CompanyAnalysis():
         self.__sales_df = self.__income_statement_df.copy()
         return self.__sales_df
 
+    @format_floats('CASH', 'CASH_GROWTH')
+    def cash_growth(self):
+        """Function that will return sales growth for whatever company specified over the period from which
+       data is available.
+       """
+
+        self.__cash_df = self.__balance_sheet_df.copy()
+        return self.__cash_df
+
     @percentage_calc_fmt('NET_INCOME', 'TOTAL_REVENUE', 'MARGIN')
     def margin_calculation(self):
         """
@@ -229,3 +238,8 @@ class CompanyAnalysis():
     @bar_graph('YEAR', 'MARGIN')
     def margin_graph(self):
         return self.__margin_df
+
+    @bar_graph('YEAR', 'CASH')
+    def cash_graph(self):
+        cash_graph = self.__balance_sheet_df.copy()
+        return cash_graph
