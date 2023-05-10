@@ -4,7 +4,7 @@ import time
 import os
 
 new_folder_path_2 = 'ANALYSIS_RESULTS/'
-list_of_companies = ['ZETA']
+list_of_companies = ['MSFT', 'AAPL']
 
 company_analysis_df = pd.DataFrame()
 for i in list_of_companies:
@@ -36,9 +36,14 @@ for i in list_of_companies:
     company_analysis.cash_graph()
     time.sleep(65)
 
+first_column = ['Company', 'PER ratio']
+other_columns = sorted(
+    list(company_analysis_df.columns.difference(first_column)))
+df_to_load = company_analysis_df.reindex(first_column + other_columns, axis=1).sort_values(
+    by=['MARGIN_2022', 'MARGIN_2021', 'ROE_2022', 'ROE_2021'], ascending=False)
 if not os.path.exists(new_folder_path_2):
     os.makedirs(new_folder_path_2)
-    company_analysis_df.to_csv(f'{new_folder_path_2}COMPANY_ANALYSIS.csv')
+    df_to_load.to_csv(f'{new_folder_path_2}COMPANY_ANALYSIS.csv')
     print(f'Created new folder: {new_folder_path_2}')
 else:
     print(f'Folder {new_folder_path_2} already exists')
