@@ -280,3 +280,33 @@ class CompanyAnalysis():
     def cash_flow_graph(self):
         cash_flow_graph = self.__cash_flow_df.copy()
         return cash_flow_graph
+
+    def run(self):
+        print("### Loading cash flow data ###")
+        self.cash_flow_load()
+        print("### Loading income statement data ###")
+        self.income_statement_load()
+        print("### Loading balance sheet data ###")
+        self.balance_sheet_load()
+        roe_df = self.return_on_equity_calculation()
+        working_capital_df = self.working_capital_calculation()
+        roa_df = self.return_on_assets_calculation()
+        sales_growth_df = self.sales_growth()
+        per_ratio_df = self.per_ratio_calculation()
+        net_income_df = self.net_income_growth()
+        margin_df = self.margin_calculation()
+        cash_df = self.cash_growth()
+        free_cash_flow_growth_df = self.free_cash_flow_growth()
+        print("### Merging all dfs together ###")
+        self.__final_df = pd.concat([per_ratio_df, working_capital_df, sales_growth_df,
+                                     net_income_df, roe_df, roa_df, margin_df, cash_df, free_cash_flow_growth_df], axis=1)
+        print("### Generating graphs ###")
+        self.sales_growth_graph()
+        self.net_income_graph()
+        self.working_capital_graph()
+        self.return_on_equity_graph()
+        self.return_on_assets_graph()
+        self.margin_graph()
+        self.cash_graph()
+        self.cash_flow_graph()
+        return self.__final_df
