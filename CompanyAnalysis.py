@@ -69,6 +69,29 @@ class CompanyAnalysis():
 
         return self.__balance_sheet_df
 
+    def cash_flow_load(self):
+        """Function to load cash flow data."""
+        url = f'https://www.alphavantage.co/query?function=CASH_FLOW&symbol={self.__symbol}&apikey={self.__access_key}'
+        response = requests.get(url)
+        cash_flow_data = response.json()
+
+        cash_flow = []
+
+        for i in cash_flow_data['annualReports']:
+            cash_flow.append((i['fiscalDateEnding'][:4],
+                             i['operatingCashflow'], i['capitalExpenditures']))
+
+        self.__cash_flow_df = pd.DataFrame(
+            cash_flow, columns=['YEAR', 'OPCASHFLOW', 'CAPEX'])
+
+        self.__cash_flow_df[['OPCASHFLOW', 'CAPEX']] = self.__cash_flow_df[[
+            'OPCASHFLOW', 'CAPEX']].astype(float)
+
+        self.__cash_flow_df['FREE_CASH_FLOW'] = self.__cash_flow_df['OPCASHFLOW'] - \
+            self.__cash_flow_df['CAPEX']
+
+        return self.__cash_flow_df
+
     def format_floats(column1, column2):
         def decorator(func):
             def wrapper(self, *args, **kwargs):
@@ -158,12 +181,21 @@ class CompanyAnalysis():
 
     @format_floats('CASH', 'CASH_GROWTH')
     def cash_growth(self):
-        """Function that will return sales growth for whatever company specified over the period from which
+        """Function that will return cash growth for whatever company specified over the period from which
        data is available.
        """
 
         self.__cash_df = self.__balance_sheet_df.copy()
         return self.__cash_df
+
+    @format_floats('FREE_CASH_FLOW', 'FREE_CASH_FLOW_GROWTH')
+    def free_cash_flow_growth(self):
+        """
+        Function that will return free cash flow growth for whatever company specified over the period from which
+        data is available.
+        """
+        self.__free_cash_flow = self.__cash_flow_df.copy()
+        return self.__free_cash_flow
 
     @percentage_calc_fmt('NET_INCOME', 'TOTAL_REVENUE', 'MARGIN')
     def margin_calculation(self):
@@ -243,3 +275,8 @@ class CompanyAnalysis():
     def cash_graph(self):
         cash_graph = self.__balance_sheet_df.copy()
         return cash_graph
+
+    @bar_graph('YEAR', 'FREE_CASH_FLOW')
+    def cash_flow_graph(self):
+        cash_flow_graph = self.__cash_flow_df.copy()
+        return cash_flow_graph
