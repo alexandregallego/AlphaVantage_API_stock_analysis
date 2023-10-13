@@ -11,6 +11,18 @@ class CompanyAnalysis():
         self.__symbol = symbol
         self.__access_key = access_key
 
+    @property
+    def cash_flow_data(self):
+        return self.__cash_flow_df
+
+    @property
+    def incone_statement_data(self):
+        return self.__income_statement_df
+
+    @property
+    def balance_sheet_data(self):
+        return self.__balance_sheet_df
+
     def trading_stocks_list(self):
         "Function to return active stocks in the last day."
         url = f"https://www.alphavantage.co/query?function=LISTING_STATUS&apikey={self.__access_key}"
