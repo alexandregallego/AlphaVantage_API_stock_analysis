@@ -7,7 +7,12 @@ authors = [
     { name = "Alexandre Gallego Mato", email = "alexandre.gallego.mato@gmail.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "matplotlib>=3.10.7",
+    "numpy>=2.3.4",
+    "pandas>=2.3.3",
+    "requests>=2.32.5",
+]
 
 [project.scripts]
 finperf = "finperf:main"
@@ -15,3 +20,9 @@ finperf = "finperf:main"
 [build-system]
 requires = ["uv_build>=0.9.7,<0.10.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "pytest>=8.4.2",
+]
